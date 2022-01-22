@@ -3,6 +3,10 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
 
+## Version 0.02
+
+* Keep tracks of new key signatures and new time signatures (but assumes same key / time across all staves)
+
 ## Version 0.01
 
  * Generates a legal Humdrum file.

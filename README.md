@@ -19,7 +19,7 @@ Work in progress
 
 ToDo
 - [ ] Write dictionary to convert NoteRest to Humdrum kern
-- [ ] Verify key + time signature + instrument chanegs througout the Score (currenrtly only initial _ is recorded)
+- [ ] Verify key + time signature + instrument changes througout the Score (currenrtly only initial _ is recorded)
 - [ ] Take into consideration other BarObjects
 - [ ] Make sure grace notes are taken into consideration
 - [ ] What about chords?

@@ -5,7 +5,7 @@ Work in progress
 
 ## Version 0.03
 
-* Dictionaries for durations (tuplets are ignored for now), supports Whole-Measure Rests, but with genric "rr", not the more elegant 4%5r version.
+* Dictionaries for durations (tuplets are ignored for now), supports Whole-Measure Rests, but with generic "rr", not the more elegant x%yr version.
 * All pitches are assigned to C right now, for QA'ing in Verovio
 * Chords are taken into considerations, but not voices (assume always voice 1 for now).
 * Fixes an issue with retrieving NoteRests that was present in past version.

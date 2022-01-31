@@ -31,4 +31,5 @@ ToDo
 - [ ] Reverse staff order
 - [ ] Tuplets
 - [ ] Better way to deal with Whole-Measure Rests
+- [ ] Create pitches dictionary
 

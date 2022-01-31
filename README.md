@@ -3,9 +3,16 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
 
+## Version 0.03
+
+* Dictionaries for durations (tuplets are ignored for now), supports Whole-Measure Rests, but with genric "rr", not the more elegant 4%5r version.
+* All pitches are assigned to C right now, for QA'ing in Verovio
+* Chords are taken into considerations, but not voices (assume always voice 1 for now).
+* Fixes an issue with retrieving NoteRests that was present in past version.
+
 ## Version 0.02
 
-* Keep tracks of new key signatures and new time signatures (but assumes same key / time across all staves)
+* Keeps tracks of new key signatures and new time signatures (but assumes same key / time across all staves)
 
 ## Version 0.01
 
@@ -18,10 +25,10 @@ Work in progress
  * Basic syntax to evaluate events vs null token is in place (at the moment, events are all marked as X)
 
 ToDo
-- [ ] Write dictionary to convert NoteRest to Humdrum kern
-- [ ] Verify key + time signature + instrument changes througout the Score (currenrtly only initial _ is recorded)
-- [ ] Take into consideration other BarObjects
+- [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
 - [ ] Make sure grace notes are taken into consideration
-- [ ] What about chords?
 - [ ] What about multiple voices within a bar?
+- [ ] Reverse staff order
+- [ ] Tuplets
+- [ ] Better way to deal with Whole-Measure Rests
 

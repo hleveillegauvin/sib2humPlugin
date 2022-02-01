@@ -32,4 +32,5 @@ ToDo
 - [ ] Tuplets
 - [ ] Better way to deal with Whole-Measure Rests
 - [ ] Create pitches dictionary
+- [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
 

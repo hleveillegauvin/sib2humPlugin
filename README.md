@@ -5,6 +5,7 @@ Work in progress
 
 ## Version 0.04
 * Dictionaries for pitches and accidentals. Supports up-to double flats/sharps. Other type of accidentals (e.g. quarter tones) not supported.
+* Following C.Sapp's changes to Instrument Code, \*Iud   => \*Iou
 
 ## Version 0.03
 

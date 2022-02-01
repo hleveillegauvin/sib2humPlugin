@@ -3,6 +3,9 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
 
+## Version 0.04
+* Dictionaries for pitches and accidentals. Supports up-to double flats/sharps. Other type of accidentals (e.g. quarter tones) not supported.
+
 ## Version 0.03
 
 * Dictionaries for durations (tuplets are ignored for now), supports Whole-Measure Rests, but with generic "rr", not the more elegant x%yr version.
@@ -26,11 +29,12 @@ Work in progress
 
 ToDo
 - [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
-- [ ] Make sure grace notes are taken into consideration
-- [ ] What about multiple voices within a bar?
+- [ ] Make sure grace notes are taken into consideration (currently ignored).
+- [ ] Multiple voices within a bar
 - [ ] Reverse staff order
 - [ ] Tuplets
 - [ ] Better way to deal with Whole-Measure Rests
-- [ ] Create pitches dictionary
 - [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
+- [ ] Tied notes
+- [ ] Articulations
 

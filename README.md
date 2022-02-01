@@ -37,4 +37,5 @@ ToDo
 - [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
 - [ ] Tied notes
 - [ ] Articulations
+- [ ] Modify instrument dictionary based on C.Sapp's modifications
 

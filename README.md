@@ -42,3 +42,4 @@ ToDo
 - [ ] Clean exit if no active score
 - [ ] Write a function to TrimTrailingTabs; will help cleaning the code and get rid of many for loops
 - [ ] Dynamics + Crescendi
+- [ ] Rewrite Whole-Measure Rests code to support x%yr notation (currently uses leagcy "rr")

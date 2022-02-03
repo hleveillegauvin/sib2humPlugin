@@ -40,3 +40,4 @@ ToDo
 - [ ] Articulations
 - [ ] Beaming (although not urgent; Verovio can do it automatically)
 - [ ] Clean exit if no active score
+- [ ] Write a function to TrimTrailingTabs; will help cleaning the code and get rid of many for loops

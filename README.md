@@ -34,7 +34,6 @@ ToDo
 - [ ] Multiple voices within a bar
 - [ ] Reverse staff order
 - [ ] Tuplets
-- [ ] Better way to deal with Whole-Measure Rests
 - [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
 - [ ] Tied notes
 - [ ] Articulations

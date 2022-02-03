@@ -39,4 +39,4 @@ ToDo
 - [ ] Tied notes
 - [ ] Articulations
 - [ ] Beaming (although not urgent; Verovio can do it automatically)
-
+- [ ] Clean exit if no active score

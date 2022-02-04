@@ -1,0 +1,1125 @@
+﻿
+{
+	Initialize "(){ AddToPluginsMenu('Convert Sibelius Score to Humdrum','Run');
+
+// The following enables the latest behavior for the ManuScript interpreter.
+// If you intend your plugin to run on previous versions of Sibelius where that functionality
+// didn't exist, you will likely have to revisit the following:
+if (Sibelius.ProgramVersion > 20200600) {
+    SetInterpreterOption(TreatSingleCharacterAsString);
+    SetInterpreterOption(SupportHalfSemitonePitchValues);
+} }"
+	Run "() {
+// Convert Sibelius Score to Humdrum Kern Format
+// Version 0.02
+// Written by: Hubert Léveillé Gauvin
+// Date: January 2022
+
+clefDictionary = CreateClefDictionary();
+instrumentDictionary = CreateInstrumentDictionary();
+keySignatureDictionary = CreateKeySignatureDictionary();
+specialBarlineDictionary = CreateSpecialBarlineDictionary();
+
+
+thisScore = Sibelius.ActiveScore;
+sysStaff = thisScore.SystemStaff;
+barlines = thisScore.Barlines;
+
+// Create blank text file
+fname = '';	
+fname = Sibelius.GetDocumentsFolder();
+fname = fname & 'sib2humtest.krn';
+Sibelius.CreateTextFile(fname);
+
+// Get info from File > Score Info, reformat for Humdrum and append to file
+AppendScoreInfoToFile(fname);
+
+
+// Add Exclusive interpretations
+
+/* Assume for the moment that everything **kern */
+
+x = 1;
+humExclusiveInterpretationsLine = '';
+for each s in thisScore // sets s to each staff in turn
+{	
+
+
+if (x = thisScore.StaffCount)
+	{	
+		humExclusiveInterpretationsLine = humExclusiveInterpretationsLine & '\*\*kern';  // if last staff, dont add tab at the end
+	} else {
+		humExclusiveInterpretationsLine = humExclusiveInterpretationsLine &  '\*\*kern' & '\t';
+
+	}	
+	x = x+1;
+}
+
+
+// Add Exclusive interpretations to krn file
+Sibelius.AppendLineToFile(fname,humExclusiveInterpretationsLine);	
+
+
+// Get name of instruments
+x = 1;
+humInstrumentLine = '';
+humInstrumentNameFirstSystemLine = '';
+humInstrumentNameSubSytemLine = '';
+for each s in thisScore // sets s to each staff in turn
+{ 
+
+
+	/* In a perfect world, we would print parts in reverse order because Humdrum scores are printed lowest
+		part first going towards highest, but Sib numbering is from highest to lowest. Doesn't have a functional impact, but this is how C.Sapp does it so...*/
+	
+	if (x = thisScore.StaffCount)
+	{	
+		humInstrumentLine = humInstrumentLine & ConvertInstrumentCode(s.InitialStyleId,instrumentDictionary);  // if last staff, dont add tab at the end
+		humInstrumentNameFirstSystemLine = humInstrumentNameFirstSystemLine  & '*I' & Chr(34) & s.FullInstrumentName ;
+		humInstrumentNameSubSytemLine = humInstrumentNameSubSytemLine  & '*I\'' & s.ShortInstrumentName ;
+	} else {
+		humInstrumentLine = humInstrumentLine &  ConvertInstrumentCode(s.InitialStyleId,instrumentDictionary) & '\t';
+		humInstrumentNameFirstSystemLine = humInstrumentNameFirstSystemLine  & '*I' & Chr(34) & s.FullInstrumentName & '\t';
+		humInstrumentNameSubSytemLine = humInstrumentNameSubSytemLine  & '*I\'' & s.ShortInstrumentName & '\t';
+	}	
+	x = x+1;
+}
+
+
+//Add Humdrum Instrument Line to krn file
+Sibelius.AppendLineToFile(fname,humInstrumentLine);
+Sibelius.AppendLineToFile(fname,humInstrumentNameFirstSystemLine);
+Sibelius.AppendLineToFile(fname,humInstrumentNameSubSytemLine);
+
+
+
+
+// Convert Inital clef name
+x = 1;
+humInitialClefLine = '';
+
+
+for each s in thisScore // sets s to each staff in turn
+{ 
+	if (x = thisScore.StaffCount)
+	{	
+		humInitialClefLine = humInitialClefLine & ConvertClef(s.InitialClefStyleId,clefDictionary);  // if last staff, don't add tab at the end
+	} else {
+		humInitialClefLine = humInitialClefLine &  ConvertClef(s.InitialClefStyleId,clefDictionary) & '\t';
+	}	
+	x = x+1;
+}
+//Add Humdrum Clef Line to krn file
+Sibelius.AppendLineToFile(fname,humInitialClefLine);
+
+
+// Convert Initial Key Signature
+x = 1;
+initialKeySignature = thisScore.SystemStaff.InitialKeySignature.Sharps;
+currentKeySignature = initialKeySignature;
+humInitialKeySignatureLine = '';
+
+for each s in thisScore // sets s to each staff in turn
+{ 
+	if (x = thisScore.StaffCount) // if last staff, don't add tab at the end
+	{	
+		if (ConvertClef(s.InitialClefStyleId,clefDictionary) = '*clefX')    // if clef is percussion, no key sig
+		{
+		humInitialKeySignatureLine = humInitialKeySignatureLine & '*';  
+		} else {
+		humInitialKeySignatureLine = humInitialKeySignatureLine & ConvertKeySignature(initialKeySignature,keySignatureDictionary);  
+		}
+		
+	} else {
+		if (ConvertClef(s.InitialClefStyleId,clefDictionary) = '*clefX' )   // if clef is percussion, no key sig
+		{
+		humInitialKeySignatureLine = humInitialKeySignatureLine & '*' & '\t';	
+		} else {
+		humInitialKeySignatureLine = humInitialKeySignatureLine & ConvertKeySignature(initialKeySignature,keySignatureDictionary) & '\t';	
+		}
+	}	
+	x = x+1;
+}
+
+//Add Humdrum Initial Key Signature Line to krn file
+Sibelius.AppendLineToFile(fname,humInitialKeySignatureLine);
+
+// Convert Initial Time Signature
+x = 1;
+initialTimeSignature = thisScore.SystemStaff.CurrentTimeSignature(1);
+currentTimeSignature = initialTimeSignature;
+humInitialTimeSignatureLine = '';
+
+
+initialTimeSignatureArray = ConvertTimeSignature(initialTimeSignature.Numerator,initialTimeSignature.Denominator,initialTimeSignature.Text);
+
+for each s in thisScore // sets s to each staff in turn
+{ 
+	if (x = thisScore.StaffCount)
+	{	
+
+		humInitialTimeSignatureLine = humInitialTimeSignatureLine & initialTimeSignatureArray[0] ;  // if last staff, don't add tab at the end
+	} else {
+		humInitialTimeSignatureLine = humInitialTimeSignatureLine & initialTimeSignatureArray[0] & '\t';
+	}	
+	x = x+1;
+}
+
+
+//Add Humdrum Initial Time Signature Line to krn file
+Sibelius.AppendLineToFile(fname,humInitialTimeSignatureLine);
+
+//Check if meter info exists (e.g. common-time), and if so add to krn file
+
+if (initialTimeSignatureArray[1] != '')
+{
+x = 1;
+humInitialMeterLine = '';
+for each s in thisScore // sets s to each staff in turn
+	{ 
+		if (x = thisScore.StaffCount)
+		{	
+		humInitialMeterLine = humInitialMeterLine & initialTimeSignatureArray[1] ;  // if last staff, don't add tab at the end
+		} else {
+		humInitialMeterLine = humInitialMeterLine & initialTimeSignatureArray[1] & '\t';
+		}	
+		x = x+1;
+	}
+
+//Add Humdrum Initial Meter Line to krn file
+Sibelius.AppendLineToFile(fname,humInitialMeterLine);
+
+}
+
+
+// Create a humline with the barline before First Measure
+// According to C.Sapp, 'Labeling the first bar is necessary if you need to extract it by measure number with a tool such as myank.'
+
+nextExternalBarNumber = sysStaff.NthBar(1).ExternalBarNumberString;
+x = 1;
+
+sblCount = 1;
+startsWithRepeat = false;
+
+
+// this is not elegant, but basically see if there's a start repeat in bar 1
+for each SpecialBarline sbl in sysStaff.NthBar(1)
+	{
+		if (sblCount = 1)
+		{	
+			if (sbl.BarlineInternalType = SpecialBarlineStartRepeat)
+			{
+			startsWithRepeat = true;
+			startRepeat = sbl.BarlineInternalType;
+			}
+		}
+	}
+
+
+
+if (nextExternalBarNumber = '')
+{
+	if (startsWithRepeat = false)
+	{
+	thisMeasureBarline = '=-';
+	} else {
+	thisMeasureBarline = '=' & '1' & ConvertSpecialBarlineCode(startRepeat,specialBarlineDictionary);
+	}
+} else {
+	if (startsWithRepeat = false)
+	{
+	thisMeasureBarline = '=' & 	nextExternalBarNumber;
+	} else {
+	thisMeasureBarline = '=' & 	nextExternalBarNumber & ConvertSpecialBarlineCode(startRepeat,specialBarlineDictionary);
+	}
+}
+
+humBarlineLine = '';
+for each s in thisScore // sets s to each staff in turn
+{ 
+	if (x = thisScore.StaffCount)
+	{	
+	humBarlineLine = humBarlineLine & thisMeasureBarline ;  // if last staff, don't add tab at the end
+	} else {
+	humBarlineLine = humBarlineLine & thisMeasureBarline & '\t';
+	}	
+	x = x+1;
+	}
+
+//Add Humdrum Barline Line to krn file
+Sibelius.AppendLineToFile(fname,humBarlineLine);
+
+
+
+addNewKeySignature = false;
+addNewTimeSignature = false;
+
+
+for each Bar b in sysStaff
+{
+currentInternalBarNumber = b.BarNumber;
+	if (b.BarNumber < sysStaff.BarCount) // As long as not on the last bar
+	{
+	nextInternalBarNumber = currentInternalBarNumber+1;
+	nextExternalBarNumber = sysStaff.NthBar(nextInternalBarNumber).ExternalBarNumberString; 
+	}	
+	
+	noteRestPositionArray = CreateSparseArray();
+	for each s in thisScore
+	{
+		//get a list of all the unique NoteRest position for this bar, regardless of the staff
+		for each BarObject in s.NthBar(currentInternalBarNumber)
+		{
+			if (BarObject.Type = 'NoteRest')
+			{
+				if (utils.IsInArray(noteRestPositionArray,BarObject.Position) = false) //add if not already in array
+				{
+				noteRestPositionArray.Push(BarObject.Position); 
+				}
+			}	
+		}
+		
+	}
+	
+		// test if the time sig for this element is different than current.
+		if( currentTimeSignature.Text != sysStaff.CurrentTimeSignature(currentInternalBarNumber).Text)
+		{	currentTimeSignature = thisScore.SystemStaff.CurrentTimeSignature(currentInternalBarNumber);
+			addNewTimeSignature = true;
+		
+		
+		
+		x = 1;
+		humNewTimeSignatureLine = '';
+		currentTimeSignatureArray = ConvertTimeSignature(currentTimeSignature.Numerator,currentTimeSignature.Denominator,currentTimeSignature.Text);
+
+		for each s in thisScore // sets s to each staff in turn
+		{ 
+			if (x = thisScore.StaffCount)
+			{	
+			humNewTimeSignatureLine = humNewTimeSignatureLine & currentTimeSignatureArray[0] ;  // if last staff, don't add tab at the end
+			} else {
+			humNewTimeSignatureLine = humNewTimeSignatureLine & currentTimeSignatureArray[0] & '\t';
+			}	
+		x = x+1;
+		}
+		
+		//Add Humdrum New Time Signature Line to krn file
+		Sibelius.AppendLineToFile(fname,humNewTimeSignatureLine);
+		
+		
+		//Check if meter info exists (e.g. common-time), and if so add to krn file
+		if (currentTimeSignatureArray[1] != '')
+		{
+		x = 1;
+		humNewMeterLine = '';
+		for each s in thisScore // sets s to each staff in turn
+		{ 
+			if (x = thisScore.StaffCount)
+			{	
+			humNewMeterLine = humNewMeterLine & currentTimeSignatureArray[1] ;  // if last staff, don't add tab at the end
+			} else {
+			humNewMeterLine = humNewMeterLine & currentTimeSignatureArray[1] & '\t';
+			}	
+			x = x+1;
+		}
+
+		//Add Humdrum Initial Meter Line to krn file
+		Sibelius.AppendLineToFile(fname,humNewMeterLine);
+
+		}
+
+		
+		
+		
+		}
+	
+	
+	
+	
+	// sort the array
+	noteRestPositionArray = utils.SortArrayNumeric(noteRestPositionArray,false);
+	
+	// create one humLine per Rhythmic Position in noteRestPositionArray
+	line = '1';
+	for each e in noteRestPositionArray
+	{
+	humLine = '';
+	
+		// test if the key sig for this element is different than current.
+		// NOTE: This method assumes that all staves have same key signature, which might not always be true...
+		if( currentKeySignature != b.GetKeySignatureAt(e).Sharps)
+		{	currentKeySignature = b.GetKeySignatureAt(e).Sharps;
+			addNewKeySignature = true;
+		}
+	
+			x=1;
+			for each s in thisScore
+			{
+				result = utils.NoteRestWithNotesAtBarPosVoice(s.NthBar(currentInternalBarNumber),e,1);
+				if (result != null)
+				{
+				kernToken = 'X';
+				} else {
+				kernToken = '.';
+				}
+			
+				if (x = thisScore.StaffCount)
+				{	
+				humLine = humLine & kernToken ;  // if last staff, don't add tab at the end
+				} else {
+				humLine = humLine & kernToken & '\t';
+				}	
+				x = x+1;
+			}
+		
+		 
+		 
+		 
+		 // if addNewKeySignature is true, add a new key signature before adding Humdrum Line
+		 
+		 // !!! IMPORTANT : NOTE HERE CHANGE INITIAL InitialClefStyleId WITH CURRENT CLEF STYLE ID WHEN THAT BIT IS FIXED 
+		if (addNewKeySignature = true)
+		{
+			x = 1;
+			humNewKeySignatureLine = '';
+			for each s in thisScore // sets s to each staff in turn
+			{ 
+				if (x = thisScore.StaffCount) // if last staff, don't add tab at the end
+				{	
+					if (ConvertClef(s.InitialClefStyleId,clefDictionary) = '*clefX')    // if clef is percussion, no key sig
+					{
+					humNewKeySignatureLine = humNewKeySignatureLine & '*';  
+					} else {
+					humNewKeySignatureLine = humNewKeySignatureLine & ConvertKeySignature(currentKeySignature,keySignatureDictionary);  
+					}
+				} else {
+					if (ConvertClef(s.InitialClefStyleId,clefDictionary) = '*clefX' )   // if clef is percussion, no key sig
+					{
+					humNewKeySignatureLine = humNewKeySignatureLine & '*' & '\t';	
+					} else {
+					humNewKeySignatureLine = humNewKeySignatureLine & ConvertKeySignature(currentKeySignature,keySignatureDictionary) & '\t';	
+					}
+				}	
+			x = x+1;
+			}	
+
+		
+			//Add New Key Signature Line to krn file
+			Sibelius.AppendLineToFile(fname,humNewKeySignatureLine);
+			addNewKeySignature = false ; // set back flag to false
+		}
+		 
+		
+		//Add Humdrum Line to krn file
+		Sibelius.AppendLineToFile(fname,humLine);
+
+
+	line = line+1;	
+	}	
+	
+	
+	/* 	This bit is a train wreck, because of the different way in which Sib and Humdrum handles barlines. 
+		The complicated bit is the end-repeat-start-repeat combinaision.
+		I need to look at special barlines always for the current and next barline 
+	*/
+	
+	specialBarline = false;
+	thisMeasureBarline = '';
+	x=1;
+	for each SpecialBarline sbl in b	
+	{
+	specialBarline = true;
+	
+		if (b.BarNumber = sysStaff.BarCount)
+		{
+		thisMeasureBarline = '=' & ConvertSpecialBarlineCode(sbl.BarlineInternalType,specialBarlineDictionary);  // if final barline, no bar number
+		} else {
+				
+				
+				if (startsWithRepeat = true)
+				{ 
+				startsWithRepeat = false;
+				specialBarline = false;
+				} else {
+
+				thisMeasureBarline = '=' & nextExternalBarNumber & ConvertSpecialBarlineCode(sbl.BarlineInternalType,specialBarlineDictionary) & CreateTokenIfBarStartsWithStartRepeat(nextInternalBarNumber);
+				thisMeasureBarline = utils.Replace(thisMeasureBarline,'!!','!',false); // when there is end repeat followed by start repeat, this removes the superfluous !
+					if (CreateTokenIfBarStartsWithStartRepeat(nextInternalBarNumber) != '')
+					{
+					startsWithRepeat = true;
+					} else {
+					startsWithRepeat = false;
+					}
+				}
+		}			
+	x=x+1;
+	}
+
+	if (specialBarline = false)
+	{
+			if (b.BarNumber = sysStaff.BarCount)
+			{
+			thisMeasureBarline = '=' ;  //in the rare case where last measure does not have a special barline, make sure to not add a bar number
+			} else {
+			thisMeasureBarline = '=' & nextExternalBarNumber & CreateTokenIfBarStartsWithStartRepeat(nextInternalBarNumber) ;
+			thisMeasureBarline = utils.Replace(thisMeasureBarline,'!!','!',false); 
+				if (CreateTokenIfBarStartsWithStartRepeat(nextInternalBarNumber) != '')
+					{
+					startsWithRepeat = true;
+					} else {
+					startsWithRepeat = false;
+					}
+			}
+
+	}
+
+	// Create a humline with the barline at the end of this measure
+	x = 1;
+	humBarlineLine = '';
+	for each s in thisScore // sets s to each staff in turn
+	{ 
+		if (x = thisScore.StaffCount)
+		{	
+		humBarlineLine = humBarlineLine & thisMeasureBarline ;  // if last staff, don't add tab at the end
+		} else {
+		humBarlineLine = humBarlineLine & thisMeasureBarline & '\t';
+		}	
+		x = x+1;
+	}
+
+	
+	
+	
+
+	
+		
+	//Add Humdrum Barline Line to krn file
+	Sibelius.AppendLineToFile(fname,humBarlineLine);
+
+	
+
+
+}
+
+
+	// create one Humdrum spine-path terminator Line
+	x = 1;
+	humSpinePathTerminatorLine = '';
+	for each s in thisScore // sets s to each staff in turn
+	{ 
+		if (x = thisScore.StaffCount)
+		{	
+		humSpinePathTerminatorLine = humSpinePathTerminatorLine & '*-' ;  // if last staff, don't add tab at the end
+		} else {
+		humSpinePathTerminatorLine = humSpinePathTerminatorLine & '*-' & '\t';
+		}	
+		x = x+1;
+	}
+
+	
+
+	
+	
+//Add Humdrum spine-path terminator Line to krn file
+Sibelius.AppendLineToFile(fname,humSpinePathTerminatorLine);
+	
+//Add final line that doesn't end with new line car
+Sibelius.AppendTextFile(fname,'!! Converted from Sibelius with sib2hum plugin');
+
+
+//Message Box at the end to know it's done is nice
+Sibelius.MessageBox('Done! The file is available here; ' & fname);
+
+
+
+}"
+	ConvertInstrumentCode "(InitialStyleId,instrumentDictionary) {
+/* Instruments that are not currently mapped to a Humdrum equivalent will become **I?? for the moment */
+
+
+if (instrumentDictionary[InitialStyleId] = '')
+{
+return '*I??';
+} else {
+return instrumentDictionary[InitialStyleId];
+}}"
+	ConvertClef "(clefStyle,clefDictionary) {
+/* Convert Sib clefs to Humdrum format using the dictionary createde with CreateClefDictionary() ; 
+I'm ignoring all TAB clefs for the moment; they will become *clef?? */
+
+
+if (clefDictionary[clefStyle] = '')
+{
+return '*clef??';
+} else {
+return clefDictionary[clefStyle];
+}
+
+}"
+	CreateInstrumentDictionary "() {
+instrumentDictionary = CreateDictionary(
+
+'instrument.brass.cornet.a','*Icornt',
+'instrument.brass.cornet.bflat','*Icornt',
+'instrument.brass.cornet.soprano.eflat','*Icornt',
+'instrument.brass.flugelhorn','*Iflugh',
+'instrument.brass.horn.a.nokeysig','*Icor',
+'instrument.brass.horn.alto.aflat.nokeysig','*Icor',
+'instrument.brass.horn.alto.eflat','*Icor',
+'instrument.brass.horn.alto.f','*Icor',
+'instrument.brass.horn.b.nokeysig','*Icor',
+'instrument.brass.horn.basso.a.nokeysig','*Icor',
+'instrument.brass.horn.basso.bflat.nokeysig','*Icor',
+'instrument.brass.horn.basso.c.nokeysig','*Icor',
+'instrument.brass.horn.bflat.nokeysig','*Icor',
+'instrument.brass.horn.c.nokeysig','*Icor',
+'instrument.brass.horn.d.nokeysig','*Icor',
+'instrument.brass.horn.dflat.nokeysig','*Icor',
+'instrument.brass.horn.e.nokeysig','*Icor',
+'instrument.brass.horn.eflat','*Icor',
+'instrument.brass.horn.eflat.nokeysig','*Icor',
+'instrument.brass.horn.f','*Icor',
+'instrument.brass.horn.f.bassclef','*Icor',
+'instrument.brass.horn.f.nokeysig','*Icor',
+'instrument.brass.horn.fsharp.nokeysig','*Icor',
+'instrument.brass.horn.g.nokeysig','*Icor',
+'instrument.brass.horn.tenor','*Icor',
+'instrument.brass.trombone','*Itromt',
+'instrument.brass.trombone.bassclef.trebleclef','*Itromt',
+'instrument.brass.trombone.tenor','*Itromt',
+'instrument.brass.trombone.trebleclef','*Itromt',
+'instrument.brass.trumpet.a','*Itromp',
+'instrument.brass.trumpet.b.nokeysig','*Itromp',
+'instrument.brass.trumpet.bflat','*Itromp',
+'instrument.brass.trumpet.bflat.nokeysig','*Itromp',
+'instrument.brass.trumpet.c','*Itromp',
+'instrument.brass.trumpet.d','*Itromp',
+'instrument.brass.trumpet.dflat','*Itromp',
+'instrument.brass.trumpet.e.nokeysig','*Itromp',
+'instrument.brass.trumpet.eflat','*Itromp',
+'instrument.brass.trumpet.f','*Itromp',
+'instrument.brass.trumpet.g.nokeysig','*Itromp',
+'instrument.brass.tuba','*Ituba',
+'instrument.brass.tuba.f','*Ituba',
+'instrument.brass.tuba.tenor','*Ituba',
+'instrument.brass.tuba.tenor.bassclef','*Ituba',
+'instrument.brass.tuba.wagner.bflat','*Ituba',
+'instrument.brass.tuba.wagner.f','*Ituba',
+'instrument.fretted.banjo.5lines','*Ibanjo',
+'instrument.fretted.banjo.aDADE.tab','*Ibanjo',
+'instrument.fretted.banjo.aEADE.tab','*Ibanjo',
+'instrument.fretted.banjo.gCGBD.tab','*Ibanjo',
+'instrument.fretted.banjo.gCGCD.tab','*Ibanjo',
+'instrument.fretted.banjo.gDFAD.tab','*Ibanjo',
+'instrument.fretted.banjo.gDGBD.tab','*Ibanjo',
+'instrument.fretted.banjo.gDGCD.tab','*Ibanjo',
+'instrument.fretted.banjo.tenor.5lines','*Ibanjo',
+'instrument.fretted.banjo.tenor.tab','*Ibanjo',
+'instrument.fretted.guitar.resonator.5lines','*Iguitr',
+'instrument.fretted.guitar.resonator.a6.tab','*Iguitr',
+'instrument.fretted.guitar.resonator.b11.tab','*Iguitr',
+'instrument.fretted.guitar.resonator.c#m.tab','*Iguitr',
+'instrument.fretted.guitar.resonator.c6-a7.tab','*Iguitr',
+'instrument.fretted.guitar.resonator.c6-highg.tab','*Iguitr',
+'instrument.fretted.guitar.resonator.c6.tab','*Iguitr',
+'instrument.fretted.guitar.resonator.cm7.tab','*Iguitr',
+'instrument.fretted.guitar.resonator.e13-hawaiian.tab','*Iguitr',
+'instrument.fretted.guitar.resonator.e13-western.tab','*Iguitr',
+'instrument.fretted.guitar.resonator.open.A.tab','*Iguitr',
+'instrument.fretted.guitar.resonator.open.G.tab','*Iguitr',
+'instrument.fretted.dulcimer','*Idulc',
+'instrument.fretted.dulcimer.5lines','*Idulc',
+'instrument.fretted.dulcimer.daa.tab','*Idulc',
+'instrument.fretted.dulcimer.dad.tab','*Idulc',
+'instrument.fretted.guitar.12-string.5lines','*Iguitr',
+'instrument.fretted.guitar.12-string.dadgad.tab','*Iguitr',
+'instrument.fretted.guitar.12-string.double-d.tab','*Iguitr',
+'instrument.fretted.guitar.12-string.dropped-d.tab','*Iguitr',
+'instrument.fretted.guitar.12-string.open-d.tab','*Iguitr',
+'instrument.fretted.guitar.12-string.open-e.tab','*Iguitr',
+'instrument.fretted.guitar.12-string.open-g.tab','*Iguitr',
+'instrument.fretted.guitar.12-string.tab','*Iguitr',
+'instrument.fretted.guitar.12-string.tab.rhythms','*Iguitr',
+'instrument.fretted.guitar.acoustic.5lines','*Iguitr',
+'instrument.fretted.guitar.acoustic.dadgad.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.double-d.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.dropped-d.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.modal-d.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.nashville.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.open-a.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.open-c.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.open-d.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.open-dm.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.open-e.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.open-g.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.tab','*Iguitr',
+'instrument.fretted.guitar.acoustic.tab.rhythms','*Iguitr',
+'instrument.fretted.guitar.bass.4-string.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.4-string.tab','*Ibguit',
+'instrument.fretted.guitar.bass.5-string.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.5-string.tab','*Ibguit',
+'instrument.fretted.guitar.bass.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.6-string.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.6-string.tab','*Ibguit',
+'instrument.fretted.guitar.bass.electric.5-string.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.electric.5-string.tab','*Ibguit',
+'instrument.fretted.guitar.bass.electric.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.electric.6-string.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.electric.6-string.tab','*Ibguit',
+'instrument.fretted.guitar.bass.electric.fretless.5-string.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.electric.fretless.5-string.tab','*Ibguit',
+'instrument.fretted.guitar.bass.electric.fretless.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.electric.fretless.6-string.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.electric.fretless.6-string.tab','*Ibguit',
+'instrument.fretted.guitar.bass.electric.fretless.tab','*Ibguit',
+'instrument.fretted.guitar.bass.electric.tab','*Ibguit',
+'instrument.fretted.guitar.bass.fretless.5-string.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.fretless.5-string.tab','*Ibguit',
+'instrument.fretted.guitar.bass.fretless.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.fretless.6-string.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.fretless.6-string.tab','*Ibguit',
+'instrument.fretted.guitar.bass.fretless.tab','*Ibguit',
+'instrument.fretted.guitar.bass.semi-acoustic.5lines','*Ibguit',
+'instrument.fretted.guitar.bass.semi-acoustic.tab','*Ibguit',
+'instrument.fretted.guitar.bass.tab','*Ibguit',
+'instrument.fretted.guitar.bass.tab.rhythms','*Ibguit',
+'instrument.fretted.guitar.classical.5lines','*Iguitr',
+'instrument.fretted.guitar.classical.dadgad.tab','*Iguitr',
+'instrument.fretted.guitar.classical.double-d.tab','*Iguitr',
+'instrument.fretted.guitar.classical.dropped-d.tab','*Iguitr',
+'instrument.fretted.guitar.classical.open-d.tab','*Iguitr',
+'instrument.fretted.guitar.classical.open-e.tab','*Iguitr',
+'instrument.fretted.guitar.classical.open-g.tab','*Iguitr',
+'instrument.fretted.guitar.classical.tab','*Iguitr',
+'instrument.fretted.guitar.classical.tab.rhythms','*Iguitr',
+'instrument.fretted.guitar.electric.5lines','*Ieguit',
+'instrument.fretted.guitar.electric.7-string.low-a.tab','*Ieguit',
+'instrument.fretted.guitar.electric.7-string.tab','*Ieguit',
+'instrument.fretted.guitar.electric.dadgad.tab','*Ieguit',
+'instrument.fretted.guitar.electric.double-d.tab','*Ieguit',
+'instrument.fretted.guitar.electric.dropped-d.tab','*Ieguit',
+'instrument.fretted.guitar.electric.open-d.tab','*Ieguit',
+'instrument.fretted.guitar.electric.open-e.tab','*Ieguit',
+'instrument.fretted.guitar.electric.open-g.tab','*Ieguit',
+'instrument.fretted.guitar.electric.tab','*Ieguit',
+'instrument.fretted.guitar.electric.tab.rhythms','*Ieguit',
+'instrument.fretted.guitar.semi-acoustic.5lines','*Iguitr',
+'instrument.fretted.guitar.semi-acoustic.dadgad.tab','*Iguitr',
+'instrument.fretted.guitar.semi-acoustic.double-d.tab','*Iguitr',
+'instrument.fretted.guitar.semi-acoustic.dropped-d.tab','*Iguitr',
+'instrument.fretted.guitar.semi-acoustic.open-d.tab','*Iguitr',
+'instrument.fretted.guitar.semi-acoustic.open-e.tab','*Iguitr',
+'instrument.fretted.guitar.semi-acoustic.open-g.tab','*Iguitr',
+'instrument.fretted.guitar.semi-acoustic.tab','*Iguitr',
+'instrument.fretted.guitar.semi-acoustic.tab.rhythms','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.10-string.tab','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.5lines','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.6-string.tab','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.6-string.tab.alternative','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.6-string.tab.bflat.mauna.loa','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.6-string.tab.c.mauna.loa','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.6-string.tab.cgdgbd.wahine','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.6-string.tab.cgdgbe.wahine','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.6-string.tab.dgdfbd.wahine','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.6-string.tab.g.mauna.loa','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.6-string.tab.g.taro.patch','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.6-string.tab.gcdgbe.wahine','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.8-string.tab','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.8-string.tab.alternative','*Iguitr',
+'instrument.fretted.guitar.steel.hawaiian.tab','*Iguitr',
+'instrument.fretted.guitar.steel.pedal.5lines','*Iguitr',
+'instrument.fretted.guitar.steel.pedal.tab','*Iguitr',
+'instrument.fretted.guitarra.5lines','*Iguitr',
+'instrument.fretted.guitarra.coimbra.tab','*Iguitr',
+'instrument.fretted.guitarra.lisboa.tab','*Iguitr',
+'instrument.fretted.guitarra.portuguesa.tab','*Iguitr',
+'instrument.fretted.lute.5lines','*Iliuto',
+'instrument.fretted.lute.bass-d.french.english.5lines','*Iliuto',
+'instrument.fretted.lute.bass-d.french.english.tab','*Iliuto',
+'instrument.fretted.lute.bass-d.italian.tab','*Iliuto',
+'instrument.fretted.lute.bass-d.spanish.tab','*Iliuto',
+'instrument.fretted.lute.italian.tab','*Iliuto',
+'instrument.fretted.lute.spanish.tab','*Iliuto',
+'instrument.fretted.lute.tab','*Iliuto',
+'instrument.fretted.lute.tenor-a.french.english.tab','*Iliuto',
+'instrument.fretted.lute.tenor-a.italian.tab','*Iliuto',
+'instrument.fretted.lute.tenor-a.spanish.tab','*Iliuto',
+'instrument.fretted.lute.treble-d.french.english.5lines','*Iliuto',
+'instrument.fretted.lute.treble-d.french.english.tab','*Iliuto',
+'instrument.fretted.lute.treble-d.italian.tab','*Iliuto',
+'instrument.fretted.lute.treble-d.spanish.tab','*Iliuto',
+'instrument.fretted.mandolin.5lines','*Imando',
+'instrument.fretted.mandolin.tab','*Imando',
+'instrument.fretted.oud.5lines','*Iud',
+'instrument.fretted.oud.tab','*Iud',
+'instrument.fretted.sitar.5lines','*Isitar',
+'instrument.fretted.sitar.ravi-shankkar.tab','*Isitar',
+'instrument.fretted.sitar.vilayat-khan.tab','*Isitar',
+'instrument.fretted.tambura.female','*Itambu',
+'instrument.fretted.tambura.male','*Itambu',
+'instrument.fretted.ukulele.5lines','*Iukule',
+'instrument.fretted.ukulele.tab','*Iukule',
+'instrument.fretted.zither','*Izithr',
+'instrument.keyboard.accordion','*Iaccor',
+'instrument.keyboard.celesta','*Iclest',
+'instrument.keyboard.clavichord','*Iclavi',
+'instrument.keyboard.keyboards','*Icemba',
+'instrument.keyboard.organ.manuals','*Iorgan',
+'instrument.keyboard.organ.manuals.solo','*Iorgan',
+'instrument.keyboard.organ.pedals','*Iorgan',
+'instrument.keyboard.organ.pedals.solo','*Iorgan',
+'instrument.keyboard.piano','*Ipiano',
+'instrument.keyboard.synthesizer','*Isynth',
+'instrument.pitchedpercussion.bells.chimes','*Ichime',
+'instrument.pitchedpercussion.bells.chimes.nokeysig','*Ichime',
+'instrument.pitchedpercussion.bells.orchestral','*Icampn',
+'instrument.pitchedpercussion.bells.tubular','*Icampn',
+'instrument.pitchedpercussion.cimbalom','*Idulc',
+'instrument.pitchedpercussion.drums.steel','*Isteel',
+'instrument.pitchedpercussion.drums.steel.bassclef','*Isteel',
+'instrument.pitchedpercussion.glockenspiel','*Iglock',
+'instrument.pitchedpercussion.glockenspiel.alto','*Iglock',
+'instrument.pitchedpercussion.glockenspiel.soprano','*Iglock',
+'instrument.pitchedpercussion.harp','*Iarpa',
+'instrument.pitchedpercussion.harp.lever','*Iarpa',
+'instrument.pitchedpercussion.timpani','*Itimpa',
+'instrument.pitchedpercussion.timpani.nokeysig','*Itimpa',
+'instrument.pitchedpercussion.vibraphone','*Ivibra',
+'instrument.pitchedpercussion.xylophone','*Ixylo',
+'instrument.pitchedpercussion.xylophone.alto','*Ixylo',
+'instrument.pitchedpercussion.xylophone.bass','*Ixylo',
+'instrument.pitchedpercussion.xylophone.soprano','*Ixylo',
+'instrument.singers.alto','*Ialto',
+'instrument.singers.alto.solo','*Ialto',
+'instrument.singers.baritone','*Ibarit',
+'instrument.singers.baritone.solo','*Ibarit',
+'instrument.singers.bass','*Ibass',
+'instrument.singers.bass.solo','*Ibass',
+'instrument.singers.contralto','*Icalto',
+'instrument.singers.counter-tenor','*Ictenor',
+'instrument.singers.mezzo-soprano','*Imezzo',
+'instrument.singers.soprano','*Isoprn',
+'instrument.singers.soprano.solo','*Isoprn',
+'instrument.singers.tenor','*Itenor',
+'instrument.singers.tenor.solo','*Itenor',
+'instrument.singers.voice.male','*Imale',
+'instrument.strings.contrabass','*Icbass',
+'instrument.strings.contrabass.bass','*Icbass',
+'instrument.strings.contrabass.double-bass','*Icbass',
+'instrument.strings.contrabass.solo','*Icbass',
+'instrument.strings.contrabass.string','*Icbass',
+'instrument.strings.contrabass.upright','*Icbass',
+'instrument.strings.viola','*Iviola',
+'instrument.strings.viola.solo','*Iviola',
+'instrument.strings.violin.1','*Ivioln',
+'instrument.strings.violin.2','*Ivioln',
+'instrument.strings.violin.I','*Ivioln',
+'instrument.strings.violin.ii','*Ivioln',
+'instrument.strings.violin.solo','*Ivioln',
+'instrument.strings.violoncello','*Icello',
+'instrument.strings.violoncello.solo','*Icello',
+'instrument.unpitched.drums.cymbal','*Ipiatt',
+'instrument.unpitched.drums.table','*Itabla',
+'instrument.unpitched.drums.tom-toms','*Itom',
+'instrument.unpitched.drums.tom-toms.4lines','*Itom',
+'instrument.unpitched.gong.large.1line','*Igong',
+'instrument.unpitched.gong.medium.1line','*Igong',
+'instrument.unpitched.tambourine','*Itambn',
+'instrument.unpitched.triangle','*Itrngl',
+'instrument.wind.bassoon','*Ifagot',
+'instrument.wind.bassoon.quart','*Ifag_c',
+'instrument.wind.clarinet.a','*Iclars',
+'instrument.wind.clarinet.aflat','*Iclars',
+'instrument.wind.clarinet.alto.eflat','*Iclara',
+'instrument.wind.clarinet.alto.eflat.bassclef','*Iclara',
+'instrument.wind.clarinet.bass.bflat','*Iclarb',
+'instrument.wind.clarinet.bass.bflat.8vb-score','*Iclarb',
+'instrument.wind.clarinet.bass.bflat.bassclef','*Iclarb',
+'instrument.wind.clarinet.bflat','*Iclars',
+'instrument.wind.clarinet.c','*Iclars',
+'instrument.wind.clarinet.d','*Iclars',
+'instrument.wind.clarinet.eflat','*Iclars',
+'instrument.wind.clarinet.g','*Iclars',
+'instrument.wind.coranglais','*Icangl',
+'instrument.wind.englishhorn','*Icangl',
+'instrument.wind.flute','*Iflt',
+'instrument.wind.flute.alto','*Iflt_a',
+'instrument.wind.flute.bansuri','*Ibansu',
+'instrument.wind.flute.bass','*Iflt_b',
+'instrument.wind.flute.eflat','*Iflt',
+'instrument.wind.flute.g','*Iflt',
+'instrument.wind.harmonica','*Iarmon',
+'instrument.wind.oboe','*Ioboe',
+'instrument.wind.oboe.baritone','*Ioboe',
+'instrument.wind.oboe.bass','*Ioboe',
+'instrument.wind.oboe.damore','*IoboeD',
+'instrument.wind.ocarina','*Iocari',
+'instrument.wind.piccolo','*Ipicco',
+'instrument.wind.piccolo.dflat','*Ipicco',
+'instrument.wind.recorder.alto','*Ifltda',
+'instrument.wind.recorder.bass','*Ifltdb',
+'instrument.wind.recorder.sopranino','*Ifltdn',
+'instrument.wind.recorder.soprano','*Ifltds',
+'instrument.wind.recorder.tenor','*Ifltdt',
+'instrument.wind.saxophone.alto','*Ifltda',
+'instrument.wind.saxophone.baritone','*IsaxR',
+'instrument.wind.saxophone.baritone.8vb-score','*IsaxR',
+'instrument.wind.saxophone.baritone.bassclef','*IsaxR',
+'instrument.wind.saxophone.bass','*IsaxB',
+'instrument.wind.saxophone.bass.15mb-score','*IsaxB',
+'instrument.wind.saxophone.bass.bassclef','*IsaxB',
+'instrument.wind.saxophone.contrabass','*IsaxC',
+'instrument.wind.saxophone.contrabass.15mb-score','*IsaxC',
+'instrument.wind.saxophone.contrabass.bassclef','*IsaxC',
+'instrument.wind.saxophone.sopranino','*IsaxN',
+'instrument.wind.saxophone.soprano','*IsaxS',
+'instrument.wind.saxophone.tenor','*IsaxT',
+'instrument.wind.saxophone.tenor.8vb-score','*IsaxT',
+'instrument.wind.saxophone.tenor.bassclef','*IsaxT',
+'instrument.wind.shakuhachi','*Ishaku');
+
+return instrumentDictionary;}"
+	CreateClefDictionary "() {
+clefDictionary = CreateDictionary(
+'clef.alto','*clefC3',
+'clef.baritone.c','*clefC5',
+'clef.baritone.f','*clefF3',
+'clef.bass','*clefF4',
+'clef.bass.down.8','*clefFv4',
+'clef.bass.up.15','*clefF^^4',
+'clef.bass.up.8','*clefF^4',
+'clef.percussion','*clefX',
+'clef.percussion_2','*clefX',
+'clef.soprano','*clefC1',
+'clef.soprano.mezzo','*clefC2',
+'clef.tenor','*clefC4',
+'clef.tenor.down.8','*clefCv4',
+'clef.treble','*clefG2',
+'clef.treble.down.8','*clefGv2',
+'clef.treble.down.8.bracketed','*clefGv2',
+'clef.treble.down.8.old','*clefGv2',
+'clef.treble.up.15','*clefG^15',
+'clef.treble.up.8','*clefG^8',
+'clef.violin.french','*clefG1',
+'clef.sub-bass.f','*clefF5');
+
+return clefDictionary;}"
+	AppendScoreInfoToFile "(fname) {
+thisScore = Sibelius.ActiveScore;
+
+if (thisScore.Composer != '')
+{
+humComposer = '!!!COM: ' & thisScore.Composer;
+Sibelius.AppendLineToFile(fname,humComposer);  
+}
+
+if (thisScore.ComposerDates != '')
+{
+humComposerDates = '!!!CDT: ' & thisScore.ComposerDates;
+Sibelius.AppendLineToFile(fname,humComposerDates);  
+}
+
+if (thisScore.Lyricist != '')
+{
+humLyricist = '!!!LYR: ' & thisScore.Lyricist;
+Sibelius.AppendLineToFile(fname,humLyricist);  
+}
+
+if (thisScore.Arranger != '')
+{
+humArranger = '!!!LAR: ' & thisScore.Arranger;
+Sibelius.AppendLineToFile(fname,humArranger);  
+}
+
+//Here I chose to use MPN-artist for Artist
+if (thisScore.Artist != '')
+{
+humArtist = '!!!MPN-artist: ' & thisScore.Artist;  
+Sibelius.AppendLineToFile(fname,humArtist);
+}
+
+if (thisScore.Title != '')
+{
+humTitle = '!!!OTL: ' & thisScore.Title; 
+Sibelius.AppendLineToFile(fname,humTitle); 
+}
+
+if (thisScore.Subtitle != '')
+{
+humSubTitle = '!!!OTL-sub: ' & thisScore.Subtitle;  
+Sibelius.AppendLineToFile(fname,humSubTitle);
+}
+
+if (thisScore.OpusNumber != '')
+{
+humOpusNumber = '!!!OPS: ' & thisScore.OpusNumber;  
+Sibelius.AppendLineToFile(fname,humOpusNumber);
+}
+
+if (thisScore.Dedication != '')
+{
+humDedication = '!!!ODE: ' & thisScore.Dedication;  
+Sibelius.AppendLineToFile(fname,humDedication);
+}
+
+if (thisScore.OtherInformation != '')
+{
+humNotaBene = '!!!ONB: ' & thisScore.OtherInformation;  
+Sibelius.AppendLineToFile(fname,humNotaBene);
+}
+
+
+if (thisScore.YearOfComposition != '')
+{
+humYearOfComposition = '!!!ODT: ' & thisScore.YearOfComposition;  
+Sibelius.AppendLineToFile(fname,humYearOfComposition);
+}
+
+if (thisScore.Publisher != '')
+{
+humPublisher = '!!!YEP: ' & thisScore.Publisher;  
+Sibelius.AppendLineToFile(fname,humPublisher);
+}
+
+if (thisScore.Copyright != '' or thisScore.Copyright != 'Copyright © ')
+{
+humCopyright = '!!!YEM: ' & thisScore.Copyright;  
+Sibelius.AppendLineToFile(fname,humCopyright);
+}
+
+//Here I chose to use ENC-copyist for Copyist 
+if (thisScore.Copyist != '')
+{
+humCopyist = '!!!ENC-copyist: ' & thisScore.Copyist;  
+Sibelius.AppendLineToFile(fname,humCopyist);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+}"
+	CreateKeySignatureDictionary "() {
+keySignatureDictionary = CreateDictionary(
+'-7','*k[b-e-a-d-g-c-f-]',
+'-6','*k[b-e-a-d-g-c-]',
+'-5','*k[b-e-a-d-g-]',
+'-4','*k[b-e-a-d-]',
+'-3','*k[b-e-a-]',
+'-2','*k[b-e-]',
+'-1','*k[b-]',
+'0','*k[]',
+'1','*k[f#]',
+'2','*k[f#c#]',
+'3','*k[f#c#g#]',
+'4','*k[f#c#g#d#]',
+'5','*k[f#c#g#d#a#]',
+'6','*k[f#c#g#d#a#e#]',
+'7','*k[f#c#g#d#a#e#b#]'
+
+
+);
+
+return keySignatureDictionary;}"
+	ConvertKeySignature "(keySignature,keySignatureDictionary) {
+if (keySignatureDictionary[keySignature] = '')
+{
+return '*k??';
+} else {
+return keySignatureDictionary[keySignature];
+}
+
+}"
+	ConvertTimeSignature "(Numerator,Denominator,Text) {
+
+
+switch(Text){
+case(CommonTimeString){humTimeSignature = '*M4/4'; humMeter = '*met(c)';}
+case(AllaBreveTimeString){humTimeSignature = '*M2/2'; humMeter = '*met(c|)';}
+default {humTimeSignature = '*M' & Numerator & '/' & Denominator; humMeter = '';}
+}
+
+timeSignatureArray = CreateSparseArray(humTimeSignature,humMeter);
+
+return timeSignatureArray;}"
+	NotePad "() {
+x = CreateTokenIfBarStartsWithStartRepeat(1);
+
+Sibelius.MessageBox(x);}"
+	ConvertSpecialBarlineCode "(BarlineInternalTypeID,specialBarlineDictionary) {
+if (specialBarlineDictionary[BarlineInternalTypeID] = '')
+{
+return '=??';
+} else {
+return specialBarlineDictionary[BarlineInternalTypeID];
+}}"
+	CreateSpecialBarlineDictionary "() {
+// note. Always add '=' + currentExternalBarNumber before the result of SpecialBarlineDictionary
+
+
+specialBarlineDictionary = CreateDictionary(
+'0','!|:',
+'1',':|!',
+'2',':',
+'3','||',
+'4','=',  // this will become '==' once you add the == before it
+'5','-',
+'6','??',  // Barline between staves. Not sure if standard in Humdrum
+'7','',
+'8','`',
+'9','\''
+
+
+);
+
+return specialBarlineDictionary;}"
+	CreateTokenIfBarStartsWithStartRepeat "(BarNumber) {
+// Check if the bar at BarNumber starts with a Start Repeat Special Barline
+// If it does, return  '!|:'
+// If it doesn't, or if bar number it out of range, return ''
+
+thisScore = Sibelius.ActiveScore;
+sysStaff = thisScore.SystemStaff;
+startsWithRepeat = false;
+
+if (BarNumber > sysStaff.BarCount)
+{
+startsWithRepeat = false;  // this is redundant, but i'm keeping it for sake of clarity
+} else {
+
+sblCount = 1;
+// this is not elegant, but basically see if there's a start repeat in bar 1
+
+for each SpecialBarline sbl in sysStaff.NthBar(BarNumber)
+	{
+		if (sblCount = 1)
+		{	
+			if (sbl.BarlineInternalType = SpecialBarlineStartRepeat)
+			{
+			startsWithRepeat = true;
+			}
+		}
+	}
+
+}
+
+
+if (startsWithRepeat = true)
+{
+return '!|:';
+} else {
+return '';
+}}"
+}

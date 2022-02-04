@@ -3,6 +3,10 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
 
+## Version 0.05
+* Spines are now in the correct (i.e. reverse from Sibelius) order
+* Fixed an issue with Whole-Measure Rests. Still uses "rr" though.
+
 ## Version 0.04
 * Dictionaries for pitches and accidentals. Supports up-to double flats/sharps. Other type of accidentals (e.g. quarter tones) not supported.
 * Following C.Sapp's changes to Instrument Code, \*Iud   => \*Ioud
@@ -32,7 +36,6 @@ ToDo
 - [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
 - [ ] Make sure grace notes are taken into consideration (currently ignored).
 - [ ] Multiple voices within a bar
-- [ ] Reverse staff order
 - [ ] Tuplets
 - [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
 - [ ] Tied notes
@@ -42,3 +45,4 @@ ToDo
 - [ ] Write a function to TrimTrailingTabs; will help cleaning the code and get rid of many for loops
 - [ ] Dynamics + Crescendi
 - [ ] Rewrite Whole-Measure Rests code to support x%yr notation (currently uses leagcy "rr")
+- [ ] Pickup bar(s)

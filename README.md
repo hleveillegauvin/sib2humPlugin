@@ -47,3 +47,4 @@ ToDo
 - [ ] Rewrite Whole-Measure Rests code to support x%yr notation (currently uses leagcy "rr")
 - [ ] Pickup bar(s)
 - [ ] Tempo markings
+- [ ] Clean-up ConvertPitch method

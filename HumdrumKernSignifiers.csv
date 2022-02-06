@@ -50,7 +50,7 @@ _ ,middle note(s) of a tie (underscore)
 { ,phrase mark (start)
 } ,phrase mark (end)
 ; ,pause sign
- ,staccato mark
+' ,staccato mark
 s ,spiccato
 """",pizzicato mark
 "

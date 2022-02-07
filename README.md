@@ -3,6 +3,10 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
 
+## Version 0.06
+* Articulations and fermatas are now supported.
+* Minor modifications to ConvertPitch method
+
 ## Version 0.05
 * Spines are now in the correct (i.e. reverse from Sibelius) order
 * Fixed an issue with Whole-Measure Rests. Still uses "rr" though.
@@ -47,4 +51,4 @@ ToDo
 - [ ] Rewrite Whole-Measure Rests code to support x%yr notation (currently uses leagcy "rr")
 - [ ] Pickup bar(s)
 - [ ] Tempo markings
-- [ ] Clean-up ConvertPitch method
+- [ ] Create GUI for users to define Custom1Artic, Custom2Artic and Custom3Artic and assign them to undefined signifiers

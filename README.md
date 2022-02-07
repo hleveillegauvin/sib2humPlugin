@@ -4,7 +4,7 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 Work in progress
 
 ## Version 0.06
-* Articulations and fermatas are now supported.
+* Articulations and fermatas are now supported
 * Minor modifications to ConvertPitch method
 
 ## Version 0.05

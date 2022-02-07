@@ -36,6 +36,8 @@ Work in progress
  * Barlines with bar numbers are at correct position
  * Basic syntax to evaluate events vs null token is in place (at the moment, events are all marked as X)
 
+----------------------------------------------------
+
 ToDo
 - [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
 - [ ] Make sure grace notes are taken into consideration (currently ignored).

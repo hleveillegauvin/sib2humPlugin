@@ -54,3 +54,5 @@ ToDo
 - [ ] Pickup bar(s)
 - [ ] Tempo markings
 - [ ] Create GUI for users to define Custom1Artic, Custom2Artic and Custom3Artic and assign them to undefined signifiers
+- [ ] Create GUI to decide name of file and where to save
+- [ ] Create progress bar (useful if score is very long and sib2hum takes several seconds)

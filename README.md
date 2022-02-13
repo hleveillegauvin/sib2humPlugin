@@ -3,6 +3,10 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
 
+## Version 0.07
+* Supports multiple voices
+* Progress bar added
+
 ## Version 0.06
 * Articulations and fermatas are now supported
 * Minor modifications to ConvertPitch method

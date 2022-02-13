@@ -46,7 +46,6 @@ ToDo
 - [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
 - [ ] Keep track of clef changes throughout the piece
 - [ ] Make sure grace notes are taken into consideration (currently ignored).
-- [ ] Multiple voices within a bar
 - [ ] Tuplets
 - [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
 - [ ] Tied notes
@@ -60,5 +59,4 @@ ToDo
 - [ ] Tempo markings
 - [ ] Create GUI for users to define Custom1Artic, Custom2Artic and Custom3Artic and assign them to undefined signifiers
 - [ ] Create GUI to decide name of file and where to save
-- [ ] Create progress bar (useful if score is very long and sib2hum takes several seconds)
 - [ ] Slurs

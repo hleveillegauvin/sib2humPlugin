@@ -24,7 +24,7 @@ Work in progress
 
 ## Version 0.02
 
-* Keeps tracks of new key signatures and new time signatures (but assumes same key / time across all staves)
+* Keeps tracks of new key signatures and new time signatures (but assumes all staves have same key and same time signature)
 
 ## Version 0.01
 
@@ -40,6 +40,7 @@ Work in progress
 
 ToDo
 - [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
+- [ ] Keep track of clef changes throughout the piece
 - [ ] Make sure grace notes are taken into consideration (currently ignored).
 - [ ] Multiple voices within a bar
 - [ ] Tuplets

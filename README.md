@@ -3,6 +3,9 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
 
+## Version 0.08
+* Tuplets are now supported, including the use of extended \*\*recip representation when needed. (I think this works, but more QA on this would be great, as math is not my forte) 
+
 ## Version 0.07
 * Supports multiple voices
 * Progress bar added
@@ -46,7 +49,6 @@ ToDo
 - [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
 - [ ] Keep track of clef changes throughout the piece
 - [ ] Make sure grace notes are taken into consideration (currently ignored).
-- [ ] Tuplets
 - [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
 - [ ] Tied notes
 - [ ] Articulations
@@ -60,3 +62,4 @@ ToDo
 - [ ] Create GUI for users to define Custom1Artic, Custom2Artic and Custom3Artic and assign them to undefined signifiers
 - [ ] Create GUI to decide name of file and where to save
 - [ ] Slurs
+- [ ] Make sure that the file generated doesn't have an extra return carriage character at the end.

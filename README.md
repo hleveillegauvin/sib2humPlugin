@@ -3,6 +3,10 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
 
+## Version 0.09
+* Keeps track of clef changes throughout the score
+* Fixed an issue with the code that keeps track of new key signatures
+
 ## Version 0.08
 * Tuplets are now supported, including the use of extended \*\*recip representation when needed. (I think this works, but more QA on this would be great, as math is not my forte) 
 
@@ -47,14 +51,12 @@ Work in progress
 
 ToDo
 - [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
-- [ ] Keep track of clef changes throughout the piece
 - [ ] Make sure grace notes are taken into consideration (currently ignored).
 - [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
 - [ ] Tied notes
 - [ ] Articulations
 - [ ] Beaming (although not urgent; Verovio can do it automatically)
 - [ ] Clean exit if no active score
-- [ ] Write a function to TrimTrailingTabs; will help cleaning the code and get rid of many for loops
 - [ ] Dynamics + Crescendi
 - [ ] Rewrite Whole-Measure Rests code to support x%yr notation (currently uses leagcy "rr")
 - [ ] Pickup bar(s)

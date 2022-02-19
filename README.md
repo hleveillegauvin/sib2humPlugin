@@ -58,7 +58,6 @@ ToDo
 - [ ] Beaming (although not urgent; Verovio can do it automatically)
 - [ ] Clean exit if no active score
 - [ ] Dynamics + Crescendi
-- [ ] Rewrite Whole-Measure Rests code to support x%yr notation (currently uses leagcy "rr")
 - [ ] Pickup bar(s)
 - [ ] Tempo markings
 - [ ] Create GUI for users to define Custom1Artic, Custom2Artic and Custom3Artic and assign them to undefined signifiers

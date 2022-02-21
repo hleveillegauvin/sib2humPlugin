@@ -64,3 +64,4 @@ ToDo
 - [ ] Create GUI to decide name of file and where to save
 - [ ] Slurs
 - [ ] Make sure that the file generated doesn't have an extra return carriage character at the end.
+- [ ] first and second endings

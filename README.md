@@ -65,3 +65,5 @@ ToDo
 - [ ] Slurs
 - [ ] Make sure that the file generated doesn't have an extra return carriage character at the end.
 - [ ] first and second endings
+- [ ] Invisible rests shoud be encoded with yy, e.g. 4ryy
+- [ ] 

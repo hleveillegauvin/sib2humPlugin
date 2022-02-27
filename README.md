@@ -58,7 +58,6 @@ ToDo
 - [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
 - [ ] Make sure grace notes are taken into consideration (currently ignored).
 - [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
-- [ ] Tied notes
 - [ ] Articulations
 - [ ] Beaming (although not urgent; Verovio can do it automatically)
 - [ ] Clean exit if no active score

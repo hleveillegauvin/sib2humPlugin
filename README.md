@@ -3,6 +3,11 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
 
+## Version 0.10
+* Ties are supported, but assumes at tie is stays in same staff/same voice
+* Added a TrimTabsLeading method, which simplifies the code and fixes some issues where tabs were either an extra tab was present between spines, or a tab car was missing
+* humNewTimeSignatureLine and humNewMeterLine didn't take voices into consideration. Fixed.
+
 ## Version 0.09
 * Keeps track of clef changes throughout the score
 * Fixed an issue with the code that keeps track of new key signatures

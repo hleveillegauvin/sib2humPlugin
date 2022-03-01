@@ -3,6 +3,10 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
 
+## Version 0.10.1
+* Fixes https://github.com/hleveillegauvin/sib2humPlugin/issues/3#issue-1152645870
+* Fixes a bug with start repeat token
+
 ## Version 0.10
 * Ties are supported, but assumes at tie is resolved in same staff/same voice
 * Added a TrimTabsLeading method, which simplifies the code and fixes some issues where tabs were either an extra tab was present between spines, or a tab car was missing

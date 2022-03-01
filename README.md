@@ -2,6 +2,8 @@
 A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
+## Version 0.11
+* Hidden rests are now encoded using yy 
 
 ## Version 0.10.1
 * Fixes https://github.com/hleveillegauvin/sib2humPlugin/issues/3#issue-1152645870
@@ -73,5 +75,4 @@ ToDo
 - [ ] Slurs
 - [ ] Make sure that the file generated doesn't have an extra return carriage character at the end.
 - [ ] first and second endings
-- [ ] Invisible rests shoud be encoded with yy, e.g. 4ryy
 - [ ] Piano pedal indications

@@ -2,6 +2,9 @@
 A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
+## Version 0.12
+*  Clean exit if no active score or active score with 0 staff
+
 ## Version 0.11
 * Hidden rests are now encoded using yy 
 
@@ -66,12 +69,11 @@ ToDo
 - [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
 - [ ] Articulations
 - [ ] Beaming (although not urgent; Verovio can do it automatically)
-- [ ] Clean exit if no active score
 - [ ] Dynamics + Crescendi
 - [ ] Pickup bar(s)
 - [ ] Tempo markings
 - [ ] Create GUI for users to define Custom1Artic, Custom2Artic and Custom3Artic and assign them to undefined signifiers
-- [ ] Create GUI to decide name of file and where to save
+- [ ] Create GUI to decide name of file and where to save (is this feasible? Can't find an example of an existing plugin that lets you do that)
 - [ ] Slurs
 - [ ] Make sure that the file generated doesn't have an extra return carriage character at the end.
 - [ ] first and second endings

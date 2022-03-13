@@ -2,6 +2,10 @@
 A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
+## Version 0.13
+* Initial support for slurs
+* Reopened https://github.com/hleveillegauvin/sib2humPlugin/issues/3#issue-1152645870
+
 ## Version 0.12
 *  Clean exit if no active score or active score with 0 staff
 
@@ -73,6 +77,7 @@ ToDo
 - [ ] Pickup bar(s)
 - [ ] Tempo markings
 - [ ] Create GUI for users to define Custom1Artic, Custom2Artic and Custom3Artic and assign them to undefined signifiers
+- [ ] Make sure that the file name is sensible and safe for mac pc and saves by default in logical directory.
 - [ ] Create GUI to decide name of file and where to save (is this feasible? Can't find an example of an existing plugin that lets you do that)
 - [ ] Slurs
 - [ ] Make sure that the file generated doesn't have an extra return carriage character at the end.

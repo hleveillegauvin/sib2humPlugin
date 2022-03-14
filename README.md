@@ -68,18 +68,26 @@ Work in progress
 ----------------------------------------------------
 
 ToDo
-- [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
+
+**Must Have**
 - [ ] Make sure grace notes are taken into consideration (currently ignored).
-- [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
 - [ ] Articulations
-- [ ] Beaming (although not urgent; Verovio can do it automatically)
 - [ ] Dynamics + Crescendi
 - [ ] Pickup bar(s)
 - [ ] Tempo markings
-- [ ] Create GUI for users to define Custom1Artic, Custom2Artic and Custom3Artic and assign them to undefined signifiers
-- [ ] Make sure that the file name is sensible and safe for mac pc and saves by default in logical directory.
-- [ ] Create GUI to decide name of file and where to save (is this feasible? Can't find an example of an existing plugin that lets you do that)
-- [ ] Slurs
 - [ ] Make sure that the file generated doesn't have an extra return carriage character at the end.
 - [ ] first and second endings
+
+**Should Have**
+- [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
+- [ ] Support slurs for more complex cases
+
+
+**Nice to Have**
+- [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
+- [ ] Beaming (although not urgent; Verovio can do it automatically)
+- [ ] Create GUI for users to define Custom1Artic, Custom2Artic and Custom3Artic and assign them to undefined signifiers
+- [ ] Create GUI to decide name of file and where to save (is this feasible? Can't find an example of an existing plugin that lets you do that)
+
+
 - [ ] Piano pedal indications

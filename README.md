@@ -73,7 +73,6 @@ Work in progress
 ToDo
 
 **Must Have**
-- [ ] Make sure grace notes are taken into consideration (currently ignored).
 - [ ] Articulations
 - [ ] Dynamics + Crescendi
 - [ ] Pickup bar(s)
@@ -84,13 +83,12 @@ ToDo
 **Should Have**
 - [ ] Verify instrument changes througout the Score (currenrtly only initial _ is recorded)
 - [ ] Support slurs for more complex cases
-
+- [ ] Ties and slurs for grace notes
+- [ ] More instruments supported
 
 **Nice to Have**
 - [ ] Add support for multistaff instrument (e.g. piano) \*staff2	\*staff1 
 - [ ] Beaming (although not urgent; Verovio can do it automatically)
 - [ ] Create GUI for users to define Custom1Artic, Custom2Artic and Custom3Artic and assign them to undefined signifiers
 - [ ] Create GUI to decide name of file and where to save (is this feasible? Can't find an example of an existing plugin that lets you do that)
-
-
 - [ ] Piano pedal indications

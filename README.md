@@ -2,6 +2,9 @@
 A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
+## Version 0.14
+* Initial support for grace notes. Slurs and ties for grace notes are not supported at the moment.
+
 ## Version 0.13
 * Initial support for slurs
 * Reopened https://github.com/hleveillegauvin/sib2humPlugin/issues/3#issue-1152645870

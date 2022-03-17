@@ -2,6 +2,10 @@
 A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
+
+## Version 0.14.1
+* Cleaned formatting of if statements
+
 ## Version 0.14
 * Initial support for grace notes. Slurs and ties for grace notes are not supported at the moment.
 

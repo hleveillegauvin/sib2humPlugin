@@ -3,6 +3,10 @@ A Sibelius plugin to convert Sibelius scores to Humdrum
 
 Work in progress
 
+## Version 0.14.2
+* Consolidated loops in HEADER OF KERN FILE section
+* Fixed small typo in gracenote code
+
 ## Version 0.14.1
 * Cleaned formatting of if statements
 

@@ -71,7 +71,7 @@ Work in progress
  * Generates a legal Humdrum file.
  * Retrieves Score info and correctly converts to Humdrum format
  * Dictionaries for clefs, key signatures, time signatures (including c and c| time)
- * Dictionnary for ~ half the possible instruments in Sibelius. Unmapped isntruments appear as \*I?? for the moment
+ * Dictionnary for ~ half the possible instruments in Sibelius. Unmapped instruments appear as \*I?? for the moment
  * Long and short names of instruments are recorded properly
  * Barlines with bar numbers are at correct position
  * Basic syntax to evaluate events vs null token is in place (at the moment, events are all marked as X)
